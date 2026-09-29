@@ -2,7 +2,7 @@ import { MoonStar } from 'lucide-react';
 import { type ThemePreference, useTheme } from './theme';
 
 export function ThemeControl() {
-  const { preference, setPreference } = useTheme();
+  const { preference, setPreference, isSaving } = useTheme();
 
   return (
     <label className="theme-control">
@@ -11,6 +11,7 @@ export function ThemeControl() {
       <select
         aria-label="Color theme"
         value={preference}
+        disabled={isSaving}
         onChange={(event) =>
           setPreference(event.target.value as ThemePreference)
         }

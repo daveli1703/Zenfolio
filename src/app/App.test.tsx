@@ -10,7 +10,7 @@ describe('Zenfolio application shell', () => {
 
   test('renders the brand and all seven navigation destinations', async () => {
     render(<App />);
-    expect(screen.getByText('Zenfolio')).toBeInTheDocument();
+    expect(await screen.findByText('Zenfolio')).toBeInTheDocument();
     expect(
       screen.getByRole('navigation', { name: 'Primary navigation' }),
     ).toBeInTheDocument();
@@ -24,7 +24,7 @@ describe('Zenfolio application shell', () => {
 
   test('navigates with hashes and updates the active destination', async () => {
     render(<App />);
-    const tasksLink = screen.getByRole('link', { name: 'Tasks' });
+    const tasksLink = await screen.findByRole('link', { name: 'Tasks' });
     fireEvent.click(tasksLink);
     await waitFor(() => expect(window.location.hash).toBe('#/tasks'));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
@@ -33,16 +33,23 @@ describe('Zenfolio application shell', () => {
     expect(tasksLink).toHaveClass('nav-item-active');
   });
 
-  test('allows light, dark, and system theme selection', () => {
+  test('persists light, dark, and system theme selection', async () => {
     render(<App />);
-    const theme = screen.getByRole('combobox', { name: 'Color theme' });
+    const theme = await screen.findByRole('combobox', { name: 'Color theme' });
+    await waitFor(() => expect(theme).not.toBeDisabled());
     expect(theme).toHaveValue('system');
     expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     fireEvent.change(theme, { target: { value: 'dark' } });
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    await waitFor(() =>
+      expect(document.documentElement).toHaveAttribute('data-theme', 'dark'),
+    );
+    await waitFor(() => expect(theme).not.toBeDisabled());
     fireEvent.change(theme, { target: { value: 'light' } });
-    expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    await waitFor(() =>
+      expect(document.documentElement).toHaveAttribute('data-theme', 'light'),
+    );
+    await waitFor(() => expect(theme).not.toBeDisabled());
     fireEvent.change(theme, { target: { value: 'system' } });
-    expect(theme).toHaveValue('system');
+    await waitFor(() => expect(theme).toHaveValue('system'));
   });
 });

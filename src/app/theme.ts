@@ -7,6 +7,7 @@ export type ThemeContextValue = {
   preference: ThemePreference;
   resolvedTheme: ResolvedTheme;
   setPreference: (theme: ThemePreference) => void;
+  isSaving: boolean;
 };
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);

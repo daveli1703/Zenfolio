@@ -6,9 +6,11 @@ network service is required.
 
 ## Current scope
 
-Milestones 1 and 2 establish the project and navigable application shell. The
-screens are intentional placeholders without task or finance functionality.
-SQLite and recovery begin in milestone 3. Stop for review between milestones.
+Milestones 1 through 3 establish the project, navigable application shell, and
+local persistence foundation. Settings are stored in SQLite and the Settings
+screen can create and validate standalone database backups. Feature screens are
+intentional placeholders without task or finance functionality. Stop for review
+between milestones.
 
 ## Frontend development
 
@@ -68,8 +70,10 @@ test without the Vite development server. The release build performs optimizatio
 - `src/styles`: bundled styling; no remote fonts.
 - `src/test`: frontend test setup.
 - `src-tauri`: native app, configuration, and narrowly scoped capabilities.
+- `src-tauri/migrations`: numbered, checksummed SQLite migrations.
 - `docs`: architecture, data decisions, and milestone validation.
 
 Do not put real personal data, database files, or backups in this repository.
 The repository is under OneDrive; the future live database will use the operating
-system's local application-data directory outside this checkout.
+system's local application-data directory outside this checkout. Debug and
+release builds use separate `development` and `production` subdirectories.

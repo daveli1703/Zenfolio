@@ -1,7 +1,9 @@
 # Agreed data decisions (for milestone 3 onward)
 
-There is no database in milestone 1. Add tables through numbered, checksummed,
-forward-only SQL migrations as their modules arrive.
+Milestone 3 introduces migration `0001_settings.sql` with only
+`schema_migrations` and the singleton `app_settings` table. Add later feature
+tables through numbered, checksummed, forward-only migrations when their modules
+arrive.
 
 ## Storage and boundaries
 
@@ -16,7 +18,7 @@ forward-only SQL migrations as their modules arrive.
 
 ## Module records
 
-- Settings singleton and migration history.
+- Settings singleton and migration history are implemented in Milestone 3.
 - Projects, tags, tasks, task/tag joins.
 - Habits, effective-dated target/schedule rules, one entry per habit/date.
 - Independent goals with manual scaled-integer progress and explicit status.
@@ -39,11 +41,14 @@ state. Keep habit rules and entries because they are historical facts.
 
 ## Recovery
 
-Use SQLite online backup, not a raw live-file copy. Restore validates a staged
-database, creates a recovery backup, closes active connections, and uses a
-recoverable swap with an interruption marker. Never reset a failed database.
-Backups and exports are unencrypted. Automatic backup retention is 14 daily
-copies; migration/restore copies and user-created backups are separate.
+Use SQLite online backup, not a raw live-file copy. Milestone 3 independently
+validates manual and pre-migration backups through application identity,
+migration history, integrity, and foreign-key checks. A failed startup preserves
+the existing file and opens a non-destructive recovery screen. Backups are
+unencrypted.
+
+Live-database replacement, staged restore, interruption markers, automatic
+retention controls, and exports remain deferred to Milestone 10.
 
 ## Deferred
 

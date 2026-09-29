@@ -7,37 +7,42 @@ services. Services own validation and transactions; feature repositories own
 parameterized SQL. Pure Rust functions own money, habit, and goal calculations.
 UI code owns presentation, calendar layout, and form state.
 
-The foundation has no IPC commands, filesystem grants, network plugins, or
-database. Production CSP permits bundled content and Tauri IPC only. Development
-CSP additionally permits the loopback Vite server and its hot-reload socket.
-No remote fonts, images, scripts, telemetry, or updater are included.
+Milestone 3 adds typed settings, storage, and backup IPC commands. A recovery
+boundary prevents normal screens from opening when the live database cannot be
+validated. Dialog permissions are limited to selecting manual backup files.
+Production CSP permits bundled content and Tauri IPC only. Development CSP
+additionally permits the loopback Vite server and its hot-reload socket. No
+remote fonts, images, scripts, telemetry, or updater are included.
 
 ## Dependencies added when needed
 
 Milestone 2 adds hash routing and accessible UI primitives. Milestone 3 adds
-rusqlite with bundled SQLite, typed command inputs/results, Zod, and TanStack
-Query. Recharts arrives with Budget. Avoid installing unused feature libraries.
+rusqlite with bundled SQLite, typed command inputs/results, Zod, TanStack Query,
+native backup dialogs, and single-instance protection. Recharts arrives with
+Budget. Avoid installing unused feature libraries.
 
-One Rust-owned SQLite connection will serialize access off the UI thread.
-The application will enforce a single instance when persistence is introduced.
-No generic repository, global event bus, or duplicated frontend persistence.
+One Rust-owned SQLite connection serializes access through a mutex. Commands run
+database work on Tauri's blocking pool. The application enforces a single
+instance before opening persistence. No generic repository, global event bus, or
+duplicated frontend persistence is used.
 
-The permanent application identifier is `app.zenfolio.local`. Preserve
-it across display-name changes. Development and release data directories must
-be separated before persistence is enabled.
+The permanent application identifier is `app.zenfolio.local`. Preserve it across
+display-name changes. Tauri's identifier-scoped local data directory contains a
+`development` database for debug builds and a `production` database for release
+builds. Tests always receive temporary directories.
 
 ## Milestones
 
 1. Foundation and build validation.
 2. Shell, seven routes, themes, accessible shared controls.
-3. Persistence, migrations, settings, backup and recoverable restore.
+3. Persistence, migrations, settings, validated backup and recovery mode.
 4. Tasks, projects, tags, filters, completion and reopening.
 5. Habits, dated rules, entries, heatmap and statistics.
 6. Manual goals and explicit status transitions.
 7. Budget accounts, transactions, categories and monthly limits.
 8. Dashboard derived from existing module data.
 9. Day/week/month planner and simple scheduled activities.
-10. Complete settings and data export/backup UX.
+10. Complete settings, restore, retention, and data export/backup UX.
 11. Cross-module testing, accessibility and performance.
 12. Windows installer, upgrade and offline release validation.
 

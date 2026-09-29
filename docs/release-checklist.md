@@ -64,3 +64,41 @@ activated with Shift+Tab and Enter. Window screenshots measured 1202 x 831 and
 1026 x 799 including Windows borders/title bars, corresponding to the configured
 1200 x 800 and 1024 x 768 client areas. No database, feature data, remote API,
 analytics, or telemetry was introduced.
+
+## Milestone 3
+
+- [x] Store the live SQLite database outside the repository under the stable
+      `app.zenfolio.local` application-data directory.
+- [x] Keep development, production, and test databases in separate directories.
+- [x] Own one serialized `rusqlite` connection in Rust and run database work on
+      Tauri's blocking thread pool.
+- [x] Enable foreign keys, WAL mode, `synchronous=FULL`, and a bounded busy
+      timeout.
+- [x] Apply numbered, checksummed SQL migrations transactionally.
+- [x] Reject corrupt, foreign, and newer-schema databases without replacing or
+      resetting them.
+- [x] Create and validate an online backup before migrating an existing database.
+- [x] Persist and validate application settings through typed Tauri IPC.
+- [x] Integrate persisted settings and theme state through TanStack Query.
+- [x] Prevent concurrent Zenfolio desktop instances.
+- [x] Create and independently validate manual SQLite online backups.
+- [x] Present a non-destructive recovery screen when the live database cannot be
+      opened safely.
+- [x] Pass frontend formatting, lint, typecheck, tests, and production build.
+- [x] Pass Rust formatting, check, Clippy with warnings denied, and tests.
+- [x] Build and launch the packaged debug application without a dev server.
+- [x] Confirm first launch, restart persistence, environment separation,
+      single-instance behavior, backup creation, backup validation, recovery paths,
+      and offline startup.
+
+Validated on 2026-09-29. The frontend suite contains five tests covering the
+application shell and IPC serialization/error contracts. The Rust suite contains
+18 tests covering settings validation and persistence, database configuration,
+migration checksums and rollback, incompatible/corrupt database preservation,
+pre-migration backup failure, online backup round trips, and IPC contracts.
+Manual failure checks used isolated database fixtures and confirmed byte-identical
+database hashes before and after corrupt, newer-schema, and blocked-backup startup
+failures. The development and production executables created distinct databases,
+and offline startup showed no TCP connections or Vite listener. Live database
+restore, replacement, recovery markers, retention controls, and export remain
+deferred to Milestone 10.
