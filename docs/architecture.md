@@ -22,7 +22,7 @@ One Rust-owned SQLite connection will serialize access off the UI thread.
 The application will enforce a single instance when persistence is introduced.
 No generic repository, global event bus, or duplicated frontend persistence.
 
-The stable application identifier is `local.dave.personalproductivity`. Preserve
+The permanent application identifier is `app.zenfolio.local`. Preserve
 it across display-name changes. Development and release data directories must
 be separated before persistence is enabled.
 

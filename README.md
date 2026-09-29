@@ -1,4 +1,4 @@
-# Personal Productivity
+# Zenfolio
 
 A Windows-first, local-only desktop workspace. Built with Tauri 2, React,
 TypeScript, Vite, and Tailwind CSS. No account, backend, analytics, or runtime
@@ -6,9 +6,9 @@ network service is required.
 
 ## Current scope
 
-Milestone 1: project foundation. This is a welcome screen, not yet a functioning
-task or finance manager. Navigation is milestone 2; SQLite and recovery are
-milestone 3. Stop for review between milestones.
+Milestones 1 and 2 establish the project and navigable application shell. The
+screens are intentional placeholders without task or finance functionality.
+SQLite and recovery begin in milestone 3. Stop for review between milestones.
 
 ## Frontend development
 
@@ -62,7 +62,9 @@ test without the Vite development server. The release build performs optimizatio
 
 ## Project map
 
-- `src/app`: React entry screen; future shell and providers.
+- `src/app`: application shell, hash router, navigation, and theme provider.
+- `src/components/ui`: shared page-header and empty-state foundations.
+- `src/features`: milestone-scoped feature pages and future module UI.
 - `src/styles`: bundled styling; no remote fonts.
 - `src/test`: frontend test setup.
 - `src-tauri`: native app, configuration, and narrowly scoped capabilities.

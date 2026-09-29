@@ -1,5 +1,5 @@
 {
-  "name": "personal-productivity",
+  "name": "zenfolio",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -24,8 +24,10 @@
     "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml --locked"
   },
   "dependencies": {
+    "lucide-react": "1.48.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
