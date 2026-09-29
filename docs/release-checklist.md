@@ -102,3 +102,38 @@ failures. The development and production executables created distinct databases,
 and offline startup showed no TCP connections or Vite listener. Live database
 restore, replacement, recovery markers, retention controls, and export remain
 deferred to Milestone 10.
+
+## Milestone 4
+
+- [x] Add migration `0002_tasks.sql` without changing the applied settings
+      migration.
+- [x] Add constrained projects, tags, tasks, and task/tag relationship tables
+      with the required foreign-key behavior and indexes.
+- [x] Implement explicit repositories, authoritative services, typed commands,
+      and matching TypeScript/Zod contracts.
+- [x] Support task create, edit, delete, completion, reopening, status and
+      priority changes, project assignment, and tag assignment.
+- [x] Support project create, edit, archive, unarchive, and delete while
+      preserving tasks.
+- [x] Support case-insensitive unique tag create, edit, and delete while
+      preserving tasks.
+- [x] Support search, combined status/priority/project/tag filters, and
+      allowlisted due-date/created-date/priority sorting.
+- [x] Replace the Tasks placeholder with a keyboard-friendly list, filter bar,
+      task drawer, taxonomy manager, and useful loading/error/empty states.
+- [x] Preserve task form drafts and display safe errors after rejected writes.
+- [x] Confirm a schema-1 database is backed up and upgraded to schema 2.
+- [x] Pass frontend formatting, lint, typecheck, tests, and production build.
+- [x] Pass Rust formatting, check, Clippy with warnings denied, and tests.
+- [x] Build and launch the packaged debug application without a dev server.
+
+Validated on 2026-09-30. The frontend suite contains twelve tests, including task
+creation, editing, completion, reopening, project/tag assignment, search,
+combined filters, sorting, empty state behavior, failed-write draft retention,
+and IPC payload parsing. The Rust suite contains 34 tests, including an
+end-to-end task service workflow on a real temporary SQLite file, migration from
+the Milestone 3 schema, restart persistence, transaction rollback, deletion
+foreign-key behavior, validation, sorting allowlists, and DTO contracts. The
+packaged application upgraded the development database to schema 2 after
+creating an independently valid schema-1 migration backup; the persisted dark
+theme remained intact. No future-module or recurrence tables were introduced.

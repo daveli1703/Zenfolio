@@ -14,12 +14,20 @@ Production CSP permits bundled content and Tauri IPC only. Development CSP
 additionally permits the loopback Vite server and its hot-reload socket. No
 remote fonts, images, scripts, telemetry, or updater are included.
 
+Milestone 4 follows the same command → service → repository boundary for tasks,
+projects, and tags. Services validate references and status transitions;
+repositories own explicit SQL and transaction boundaries. Task list filters live
+in URL search parameters while TanStack Query owns fetched records and confirmed
+mutation refreshes.
+
 ## Dependencies added when needed
 
 Milestone 2 adds hash routing and accessible UI primitives. Milestone 3 adds
 rusqlite with bundled SQLite, typed command inputs/results, Zod, TanStack Query,
 native backup dialogs, and single-instance protection. Recharts arrives with
 Budget. Avoid installing unused feature libraries.
+
+Milestone 4 adds only `uuid` for Rust-generated UUID v4 entity identifiers.
 
 One Rust-owned SQLite connection serializes access through a mutex. Commands run
 database work on Tauri's blocking pool. The application enforces a single

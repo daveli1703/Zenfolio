@@ -6,10 +6,11 @@ network service is required.
 
 ## Current scope
 
-Milestones 1 through 3 establish the project, navigable application shell, and
-local persistence foundation. Settings are stored in SQLite and the Settings
-screen can create and validate standalone database backups. Feature screens are
-intentional placeholders without task or finance functionality. Stop for review
+Milestones 1 through 4 establish the project, navigable application shell, local
+persistence foundation, and Tasks MVP. Tasks support projects, tags, search,
+combined filters, sorting, completion, and reopening. Settings are stored in
+SQLite and the Settings screen can create and validate standalone database
+backups. Other feature screens remain intentional placeholders. Stop for review
 between milestones.
 
 ## Frontend development
@@ -66,7 +67,7 @@ test without the Vite development server. The release build performs optimizatio
 
 - `src/app`: application shell, hash router, navigation, and theme provider.
 - `src/components/ui`: shared page-header and empty-state foundations.
-- `src/features`: milestone-scoped feature pages and future module UI.
+- `src/features`: milestone-scoped feature pages, including task management.
 - `src/styles`: bundled styling; no remote fonts.
 - `src/test`: frontend test setup.
 - `src-tauri`: native app, configuration, and narrowly scoped capabilities.
@@ -74,6 +75,6 @@ test without the Vite development server. The release build performs optimizatio
 - `docs`: architecture, data decisions, and milestone validation.
 
 Do not put real personal data, database files, or backups in this repository.
-The repository is under OneDrive; the future live database will use the operating
-system's local application-data directory outside this checkout. Debug and
-release builds use separate `development` and `production` subdirectories.
+The repository is under OneDrive; the live database uses the operating system's
+local application-data directory outside this checkout. Debug and release builds
+use separate `development` and `production` subdirectories.

@@ -1,9 +1,9 @@
 # Agreed data decisions (for milestone 3 onward)
 
 Milestone 3 introduces migration `0001_settings.sql` with only
-`schema_migrations` and the singleton `app_settings` table. Add later feature
-tables through numbered, checksummed, forward-only migrations when their modules
-arrive.
+`schema_migrations` and the singleton `app_settings` table. Milestone 4 adds
+`0002_tasks.sql` for projects, tags, tasks, and task/tag relationships. Later
+features continue through numbered, checksummed, forward-only migrations.
 
 ## Storage and boundaries
 
@@ -19,7 +19,10 @@ arrive.
 ## Module records
 
 - Settings singleton and migration history are implemented in Milestone 3.
-- Projects, tags, tasks, task/tag joins.
+- Projects, tags, tasks, and task/tag joins are implemented in Milestone 4.
+  Project deletion clears task associations; tag deletion removes join rows.
+  Task completion timestamps follow explicit status transitions. Tag names are
+  unique after trimming and case-insensitive comparison.
 - Habits, effective-dated target/schedule rules, one entry per habit/date.
 - Independent goals with manual scaled-integer progress and explicit status.
 - Accounts, typed transaction categories, transactions, monthly and category budgets.

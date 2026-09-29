@@ -15,11 +15,18 @@ pub struct Migration {
     pub sql: &'static str,
 }
 
-pub const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "settings",
-    sql: include_str!("../../migrations/0001_settings.sql"),
-}];
+pub const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "settings",
+        sql: include_str!("../../migrations/0001_settings.sql"),
+    },
+    Migration {
+        version: 2,
+        name: "tasks",
+        sql: include_str!("../../migrations/0002_tasks.sql"),
+    },
+];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SchemaStatus {
@@ -156,6 +163,15 @@ fn apply_pending_from(
     Ok(())
 }
 
+#[cfg(test)]
+pub(crate) fn apply_pending_from_for_test(
+    connection: &mut Connection,
+    current_version: i64,
+    migration_count: usize,
+) -> Result<(), AppError> {
+    apply_pending_from(connection, current_version, &MIGRATIONS[..migration_count])
+}
+
 pub fn verify_integrity(connection: &Connection) -> Result<(), AppError> {
     let integrity: String = connection
         .query_row("PRAGMA integrity_check", [], |row| row.get(0))
@@ -242,7 +258,7 @@ mod tests {
         apply_pending(&mut connection, 0).expect("apply migrations");
 
         let status = inspect_schema(&connection).expect("inspect schema");
-        assert_eq!(status.current_version, 1);
+        assert_eq!(status.current_version, 2);
         assert_eq!(status.current_version, status.latest_version);
     }
 
@@ -260,7 +276,7 @@ mod tests {
 
         let error = inspect_schema(&connection).expect_err("reject checksum drift");
         assert_eq!(error.code, "DATABASE_INCOMPATIBLE");
-        assert_eq!(MIGRATIONS.len(), 1);
+        assert_eq!(MIGRATIONS.len(), 2);
     }
 
     #[test]
@@ -269,7 +285,7 @@ mod tests {
         initialize_new_database(&connection).expect("set identity");
         apply_pending(&mut connection, 0).expect("base migration");
         let failing = [Migration {
-            version: 2,
+            version: 3,
             name: "failing",
             sql: "CREATE TABLE should_roll_back (id INTEGER); INVALID SQL;",
         }];
@@ -286,7 +302,7 @@ mod tests {
             .unwrap();
         let version_count: i64 = connection
             .query_row(
-                "SELECT count(*) FROM schema_migrations WHERE version=2",
+                "SELECT count(*) FROM schema_migrations WHERE version=3",
                 [],
                 |row| row.get(0),
             )
@@ -303,12 +319,34 @@ mod tests {
         connection
             .execute(
                 "INSERT INTO schema_migrations (version, name, checksum, applied_at)
-                 VALUES (2, 'future', ?1, '2026-09-29T00:00:00.000Z')",
+                 VALUES (3, 'future', ?1, '2026-09-29T00:00:00.000Z')",
                 ["0".repeat(64)],
             )
             .unwrap();
 
         let error = inspect_schema(&connection).expect_err("reject newer database");
         assert_eq!(error.code, "DATABASE_INCOMPATIBLE");
+    }
+
+    #[test]
+    fn upgrades_a_milestone_three_database_to_tasks() {
+        let mut connection = Connection::open_in_memory().expect("open database");
+        initialize_new_database(&connection).expect("set identity");
+        apply_pending_from(&mut connection, 0, &MIGRATIONS[..1]).expect("settings migration");
+        assert_eq!(inspect_schema(&connection).unwrap().current_version, 1);
+
+        apply_pending(&mut connection, 1).expect("tasks migration");
+
+        assert_eq!(inspect_schema(&connection).unwrap().current_version, 2);
+        for table in ["projects", "tags", "tasks", "task_tags"] {
+            let count: i64 = connection
+                .query_row(
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?1",
+                    [table],
+                    |row| row.get(0),
+                )
+                .unwrap();
+            assert_eq!(count, 1, "missing table {table}");
+        }
     }
 }

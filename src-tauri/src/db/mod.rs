@@ -1,5 +1,8 @@
 pub mod migrations;
+pub mod projects_repository;
 pub mod settings_repository;
+pub mod tags_repository;
+pub mod tasks_repository;
 
 use std::{
     fs,
@@ -259,7 +262,7 @@ mod tests {
             migrations::inspect_schema(connection)
                 .unwrap()
                 .current_version,
-            1
+            2
         );
         assert_eq!(settings_repository::get(connection).unwrap().theme, "dark");
     }
@@ -288,8 +291,72 @@ mod tests {
             migrations::validate_database_file(&paths.database, true)
                 .unwrap()
                 .current_version,
+            2
+        );
+    }
+
+    #[test]
+    fn upgrades_a_milestone_three_file_after_backing_up_schema_one() {
+        let base = tempdir().expect("temporary directory");
+        let paths = StoragePaths::new(base.path().to_owned(), DataEnvironment::Test);
+        fs::create_dir_all(&paths.root).expect("storage root");
+        let mut connection = Connection::open(&paths.database).expect("milestone three database");
+        migrations::initialize_new_database(&connection).expect("set Zenfolio identity");
+        super::migrations::apply_pending_from_for_test(&mut connection, 0, 1)
+            .expect("settings migration");
+        drop(connection);
+
+        let database = Database::initialize(paths.clone()).expect("upgrade database");
+        drop(database);
+
+        let backups = fs::read_dir(&paths.migration_backups)
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(backups.len(), 1);
+        assert_eq!(
+            migrations::validate_database_file(&backups[0].path(), false)
+                .unwrap()
+                .current_version,
             1
         );
+        assert_eq!(
+            migrations::validate_database_file(&paths.database, true)
+                .unwrap()
+                .current_version,
+            2
+        );
+    }
+
+    #[test]
+    fn task_data_persists_after_database_restart() {
+        let base = tempdir().expect("temporary directory");
+        let paths = StoragePaths::new(base.path().to_owned(), DataEnvironment::Test);
+        let database = Database::initialize(paths.clone()).expect("initialize database");
+        {
+            let mut guard = database.connection.lock().unwrap();
+            let connection = guard.as_mut().unwrap();
+            connection
+                .execute(
+                    "INSERT INTO tasks (
+                        id, title, priority, status, created_at, updated_at
+                     ) VALUES ('persisted', 'Persistent task', 'medium', 'todo', 'now', 'now')",
+                    [],
+                )
+                .unwrap();
+        }
+        drop(database);
+
+        let reopened = Database::initialize(paths).expect("reopen database");
+        let guard = reopened.connection.lock().unwrap();
+        let title: String = guard
+            .as_ref()
+            .unwrap()
+            .query_row("SELECT title FROM tasks WHERE id='persisted'", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(title, "Persistent task");
     }
 
     #[test]

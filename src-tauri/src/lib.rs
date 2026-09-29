@@ -78,6 +78,21 @@ pub fn run() {
             commands::update_settings,
             commands::create_manual_backup,
             commands::validate_backup,
+            commands::list_projects,
+            commands::create_project,
+            commands::update_project,
+            commands::set_project_archived,
+            commands::delete_project,
+            commands::list_tags,
+            commands::create_tag,
+            commands::update_tag,
+            commands::delete_tag,
+            commands::list_tasks,
+            commands::get_task,
+            commands::create_task,
+            commands::update_task,
+            commands::set_task_status,
+            commands::delete_task,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Zenfolio");

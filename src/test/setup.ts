@@ -35,6 +35,13 @@ vi.mock('@tauri-apps/api/core', () => ({
         environment: 'development',
       };
     }
+    if (
+      command === 'list_tasks' ||
+      command === 'list_projects' ||
+      command === 'list_tags'
+    ) {
+      return [];
+    }
     throw new Error(`Unexpected test command: ${command}`);
   }),
 }));
@@ -56,6 +63,16 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: () => undefined,
     dispatchEvent: () => false,
   }),
+});
+
+Object.defineProperty(window, 'confirm', {
+  writable: true,
+  value: vi.fn(() => true),
+});
+
+Object.defineProperty(window, 'prompt', {
+  writable: true,
+  value: vi.fn(() => null),
 });
 
 afterEach(cleanup);
