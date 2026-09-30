@@ -3,6 +3,7 @@ import { appErrorSchema } from './errors';
 import { appSettingsSchema } from './settings';
 import { startupStatusSchema } from './startup';
 import { projectSchema, tagSchema, taskInputSchema, taskSchema } from './tasks';
+import { habitDetailSchema, habitYearSchema } from './habits';
 
 describe('Tauri IPC contracts', () => {
   test('accepts the Rust settings payload shape', () => {
@@ -82,5 +83,62 @@ describe('Tauri IPC contracts', () => {
       tagIds: [],
     });
     expect(parsed.success).toBe(false);
+  });
+
+  test('accepts historical habit and heatmap payloads', () => {
+    const habit = {
+      id: 'habit-1',
+      name: 'Read',
+      description: null,
+      targetType: 'count',
+      unit: 'pages',
+      color: '#17735a',
+      startDate: '2024-01-01',
+      archiveDate: null,
+      createdAt: 'created',
+      updatedAt: 'updated',
+    };
+    expect(
+      habitDetailSchema.parse({
+        habit,
+        rules: [
+          {
+            id: 'rule-1',
+            habitId: 'habit-1',
+            effectiveDate: '2024-01-01',
+            target: 10,
+            weekdayMask: 127,
+            createdAt: 'created',
+            updatedAt: 'updated',
+          },
+        ],
+        hasEntries: true,
+      }).rules[0].target,
+    ).toBe(10);
+    expect(
+      habitYearSchema.parse({
+        habit,
+        year: 2024,
+        days: [
+          {
+            date: '2024-02-29',
+            state: 'eligible',
+            value: 10,
+            notes: null,
+            target: 10,
+            completed: true,
+            intensity: 4,
+            progressRatio: 1,
+          },
+        ],
+        statistics: {
+          currentStreak: 1,
+          longestStreak: 1,
+          completedDays: 1,
+          elapsedScheduledDays: 1,
+          completionRate: 1,
+        },
+      }).days[0].date,
+    ).toBe('2024-02-29');
   });
 });

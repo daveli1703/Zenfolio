@@ -6,12 +6,12 @@ network service is required.
 
 ## Current scope
 
-Milestones 1 through 4 establish the project, navigable application shell, local
-persistence foundation, and Tasks MVP. Tasks support projects, tags, search,
-combined filters, sorting, completion, and reopening. Settings are stored in
+Milestones 1 through 5 establish the project, application shell, local
+persistence, Tasks MVP, and Habits with historical targets, daily entries,
+scheduled weekdays, statistics, and yearly heatmaps. Settings are stored in
 SQLite and the Settings screen can create and validate standalone database
-backups. Other feature screens remain intentional placeholders. Stop for review
-between milestones.
+backups. Remaining feature screens are intentional placeholders. Stop for
+review between milestones.
 
 ## Frontend development
 
@@ -67,7 +67,7 @@ test without the Vite development server. The release build performs optimizatio
 
 - `src/app`: application shell, hash router, navigation, and theme provider.
 - `src/components/ui`: shared page-header and empty-state foundations.
-- `src/features`: milestone-scoped feature pages, including task management.
+- `src/features`: milestone-scoped feature pages, including tasks and habits.
 - `src/styles`: bundled styling; no remote fonts.
 - `src/test`: frontend test setup.
 - `src-tauri`: native app, configuration, and narrowly scoped capabilities.

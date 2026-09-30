@@ -6,11 +6,15 @@ use tauri::State;
 use crate::{
     db::DataEnvironment,
     domain::{
+        habits::{
+            CreateHabitInput, Habit, HabitDeleteImpact, HabitDetail, HabitEntry, HabitEntryInput,
+            HabitProfileInput, HabitRuleInput, HabitToday, HabitYear,
+        },
         settings::{AppSettings, UpdateSettingsInput},
         tasks::{Project, ProjectInput, Tag, TagInput, Task, TaskFilters, TaskInput},
     },
     error::AppError,
-    services::{backup, projects, settings, tags, tasks},
+    services::{backup, habits, projects, settings, tags, tasks},
     AppState,
 };
 
@@ -201,6 +205,91 @@ pub async fn set_task_status(
 #[tauri::command]
 pub async fn delete_task(input: EntityIdInput, state: State<'_, AppState>) -> Result<(), AppError> {
     tasks::delete(state.database()?, input.id).await
+}
+
+#[tauri::command]
+pub async fn list_habits(state: State<'_, AppState>) -> Result<Vec<Habit>, AppError> {
+    habits::list(state.database()?).await
+}
+
+#[tauri::command]
+pub async fn get_habit_detail(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<HabitDetail, AppError> {
+    habits::detail(state.database()?, id).await
+}
+
+#[tauri::command]
+pub async fn create_habit(
+    input: CreateHabitInput,
+    state: State<'_, AppState>,
+) -> Result<HabitDetail, AppError> {
+    habits::create(state.database()?, input).await
+}
+
+#[tauri::command]
+pub async fn update_habit_profile(
+    id: String,
+    input: HabitProfileInput,
+    state: State<'_, AppState>,
+) -> Result<HabitDetail, AppError> {
+    habits::update_profile(state.database()?, id, input).await
+}
+
+#[tauri::command]
+pub async fn schedule_habit_rule_change(
+    id: String,
+    input: HabitRuleInput,
+    state: State<'_, AppState>,
+) -> Result<HabitDetail, AppError> {
+    habits::schedule_rule(state.database()?, id, input).await
+}
+
+#[tauri::command]
+pub async fn archive_habit(
+    input: EntityIdInput,
+    state: State<'_, AppState>,
+) -> Result<HabitDetail, AppError> {
+    habits::archive(state.database()?, input.id).await
+}
+
+#[tauri::command]
+pub async fn save_habit_entry(
+    input: HabitEntryInput,
+    state: State<'_, AppState>,
+) -> Result<HabitEntry, AppError> {
+    habits::save_entry(state.database()?, input).await
+}
+
+#[tauri::command]
+pub async fn list_today_habits(state: State<'_, AppState>) -> Result<Vec<HabitToday>, AppError> {
+    habits::today_list(state.database()?).await
+}
+
+#[tauri::command]
+pub async fn get_habit_year(
+    id: String,
+    year: i32,
+    state: State<'_, AppState>,
+) -> Result<HabitYear, AppError> {
+    habits::year(state.database()?, id, year).await
+}
+
+#[tauri::command]
+pub async fn get_habit_delete_impact(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<HabitDeleteImpact, AppError> {
+    habits::delete_impact(state.database()?, id).await
+}
+
+#[tauri::command]
+pub async fn delete_habit(
+    input: EntityIdInput,
+    state: State<'_, AppState>,
+) -> Result<(), AppError> {
+    habits::delete(state.database()?, input.id).await
 }
 
 fn validate_path(path: &str) -> Result<(), AppError> {

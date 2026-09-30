@@ -2,8 +2,10 @@
 
 Milestone 3 introduces migration `0001_settings.sql` with only
 `schema_migrations` and the singleton `app_settings` table. Milestone 4 adds
-`0002_tasks.sql` for projects, tags, tasks, and task/tag relationships. Later
-features continue through numbered, checksummed, forward-only migrations.
+`0002_tasks.sql` for projects, tags, tasks, and task/tag relationships.
+Milestone 5 adds `0003_habits.sql` for habits, effective-dated rules, and one
+aggregate entry per habit/date. Later features continue through numbered,
+checksummed, forward-only migrations.
 
 ## Storage and boundaries
 
@@ -23,7 +25,10 @@ features continue through numbered, checksummed, forward-only migrations.
   Project deletion clears task associations; tag deletion removes join rows.
   Task completion timestamps follow explicit status transitions. Tag names are
   unique after trimming and case-insensitive comparison.
-- Habits, effective-dated target/schedule rules, one entry per habit/date.
+- Habits own effective-dated target/schedule rules and one aggregate entry per
+  habit/date. Monday is bit zero in the seven-bit weekday mask. The applicable
+  rule is the latest rule effective on or before a date. Target and schedule
+  edits replace tomorrow's pending rule without rewriting earlier rules.
 - Independent goals with manual scaled-integer progress and explicit status.
 - Accounts, typed transaction categories, transactions, monthly and category budgets.
 - Single-day planner events with optional task links.
@@ -35,8 +40,11 @@ record exists. Never silently reinterpret balances or use float arithmetic.
 Habit rules support daily/selected weekdays. Changes take effect tomorrow and
 preserve earlier rules. Durations are whole minutes; counts are whole units.
 Streaks count scheduled opportunities; incomplete today does not break a streak.
-Past missing eligible days do. Numeric heatmap intensity is relative to that
-day's historical target. Archive takes effect tomorrow.
+Past missing eligible days do. Completion rates exclude incomplete today and
+return an empty state when no elapsed days are scheduled. Numeric heatmap
+intensity is relative to that day's historical target. Archive takes effect
+tomorrow and is the first inactive date. Type, unit, and start date lock after
+the first entry.
 
 Calculate balances, budget summaries, habit statistics, goal percentages,
 dashboard values and planner task projections; do not persist duplicate derived

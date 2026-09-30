@@ -137,3 +137,30 @@ foreign-key behavior, validation, sorting allowlists, and DTO contracts. The
 packaged application upgraded the development database to schema 2 after
 creating an independently valid schema-1 migration backup; the persisted dark
 theme remained intact. No future-module or recurrence tables were introduced.
+
+## Milestone 5
+
+- [x] Add migration `0003_habits.sql` without modifying migrations 1 or 2.
+- [x] Add habits, dated rules, and unique daily aggregate entries.
+- [x] Support boolean, count, and whole-minute duration targets.
+- [x] Support daily and selected-weekday schedules.
+- [x] Preserve historical targets and schedules through tomorrow-effective rules.
+- [x] Replace an already pending tomorrow rule instead of duplicating it.
+- [x] Reject future, pre-start, unscheduled, and post-archive entries.
+- [x] Support eligible backdated entries and tomorrow-effective archive boundaries.
+- [x] Calculate streaks and completion rates from scheduled opportunities.
+- [x] Render a leap-year-safe, first-weekday-aware yearly heatmap.
+- [x] Provide mouse and roving-keyboard heatmap interaction.
+- [x] Preserve task and settings records through the schema 2 to 3 migration.
+- [x] Complete final automated and packaged desktop validation.
+
+Validated on 2026-09-30. The frontend suite contains twenty tests covering
+typed habit contracts, timezone-safe dates, leap-year and first-weekday calendar
+grids, creation and entry flows, selected weekdays, rule changes, and roving
+heatmap keyboard navigation. The Rust suite contains 46 tests covering migration
+2 to 3, target types, historical rules, pending-rule replacement, eligibility,
+archive boundaries, scheduled-opportunity streaks, completion denominators,
+intensity thresholds, persistence, cascades, and existing recovery behavior.
+The offline debug build succeeded and launched a Zenfolio window with no TCP
+connections. Full visual interaction remains part of the user review because
+native-window automation was unavailable in this environment.

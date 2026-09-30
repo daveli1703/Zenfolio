@@ -26,6 +26,11 @@ pub const MIGRATIONS: &[Migration] = &[
         name: "tasks",
         sql: include_str!("../../migrations/0002_tasks.sql"),
     },
+    Migration {
+        version: 3,
+        name: "habits",
+        sql: include_str!("../../migrations/0003_habits.sql"),
+    },
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -258,7 +263,7 @@ mod tests {
         apply_pending(&mut connection, 0).expect("apply migrations");
 
         let status = inspect_schema(&connection).expect("inspect schema");
-        assert_eq!(status.current_version, 2);
+        assert_eq!(status.current_version, 3);
         assert_eq!(status.current_version, status.latest_version);
     }
 
@@ -276,16 +281,16 @@ mod tests {
 
         let error = inspect_schema(&connection).expect_err("reject checksum drift");
         assert_eq!(error.code, "DATABASE_INCOMPATIBLE");
-        assert_eq!(MIGRATIONS.len(), 2);
+        assert_eq!(MIGRATIONS.len(), 3);
     }
 
     #[test]
     fn rolls_back_a_failed_migration_and_its_history_record() {
         let mut connection = Connection::open_in_memory().expect("open database");
         initialize_new_database(&connection).expect("set identity");
-        apply_pending(&mut connection, 0).expect("base migration");
+        apply_pending_from(&mut connection, 0, &MIGRATIONS[..1]).expect("base migration");
         let failing = [Migration {
-            version: 3,
+            version: 2,
             name: "failing",
             sql: "CREATE TABLE should_roll_back (id INTEGER); INVALID SQL;",
         }];
@@ -302,7 +307,7 @@ mod tests {
             .unwrap();
         let version_count: i64 = connection
             .query_row(
-                "SELECT count(*) FROM schema_migrations WHERE version=3",
+                "SELECT count(*) FROM schema_migrations WHERE version=2",
                 [],
                 |row| row.get(0),
             )
@@ -319,7 +324,7 @@ mod tests {
         connection
             .execute(
                 "INSERT INTO schema_migrations (version, name, checksum, applied_at)
-                 VALUES (3, 'future', ?1, '2026-09-29T00:00:00.000Z')",
+                 VALUES (4, 'future', ?1, '2026-09-29T00:00:00.000Z')",
                 ["0".repeat(64)],
             )
             .unwrap();
@@ -335,10 +340,53 @@ mod tests {
         apply_pending_from(&mut connection, 0, &MIGRATIONS[..1]).expect("settings migration");
         assert_eq!(inspect_schema(&connection).unwrap().current_version, 1);
 
-        apply_pending(&mut connection, 1).expect("tasks migration");
+        apply_pending_from(&mut connection, 1, &MIGRATIONS[1..2]).expect("tasks migration");
 
         assert_eq!(inspect_schema(&connection).unwrap().current_version, 2);
         for table in ["projects", "tags", "tasks", "task_tags"] {
+            let count: i64 = connection
+                .query_row(
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?1",
+                    [table],
+                    |row| row.get(0),
+                )
+                .unwrap();
+            assert_eq!(count, 1, "missing table {table}");
+        }
+    }
+
+    #[test]
+    fn upgrades_a_task_database_to_habits_without_losing_existing_records() {
+        let mut connection = Connection::open_in_memory().expect("open database");
+        initialize_new_database(&connection).expect("set identity");
+        apply_pending_from(&mut connection, 0, &MIGRATIONS[..2]).expect("task schema");
+        connection.execute(
+            "INSERT INTO projects (id, name, archived, created_at, updated_at) VALUES ('p', 'Work', 0, 'now', 'now')",
+            [],
+        ).unwrap();
+        connection.execute(
+            "INSERT INTO app_settings (id, currency_code, currency_exponent, application_timezone, date_format, time_format, first_weekday, theme, created_at, updated_at) VALUES (1, 'VND', 0, 'UTC', 'DD/MM/YYYY', '24h', 1, 'system', 'now', 'now')",
+            [],
+        ).unwrap();
+
+        apply_pending(&mut connection, 2).expect("habit migration");
+
+        assert_eq!(inspect_schema(&connection).unwrap().current_version, 3);
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM projects", [], |row| row
+                    .get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM app_settings", [], |row| row
+                    .get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        for table in ["habits", "habit_rules", "habit_entries"] {
             let count: i64 = connection
                 .query_row(
                     "SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?1",

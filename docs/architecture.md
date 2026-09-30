@@ -20,6 +20,13 @@ repositories own explicit SQL and transaction boundaries. Task list filters live
 in URL search parameters while TanStack Query owns fetched records and confirmed
 mutation refreshes.
 
+Milestone 5 applies that boundary to habits. Rust resolves effective-dated
+rules, entry eligibility, application-timezone date boundaries, streaks,
+completion rates, and heatmap intensity. The frontend receives authoritative
+daily projections and only arranges them into a seven-row yearly calendar grid.
+Confirmed mutations invalidate habit queries; date-sensitive queries refresh on
+focus, after preference changes, and across local day boundaries.
+
 ## Dependencies added when needed
 
 Milestone 2 adds hash routing and accessible UI primitives. Milestone 3 adds
@@ -28,6 +35,7 @@ native backup dialogs, and single-instance protection. Recharts arrives with
 Budget. Avoid installing unused feature libraries.
 
 Milestone 4 adds only `uuid` for Rust-generated UUID v4 entity identifiers.
+Milestone 5 adds no dependencies.
 
 One Rust-owned SQLite connection serializes access through a mutex. Commands run
 database work on Tauri's blocking pool. The application enforces a single

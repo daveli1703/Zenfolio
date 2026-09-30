@@ -123,7 +123,7 @@ mod tests {
         assert_eq!(theme, "dark");
         assert_eq!(
             migrations::inspect_schema(&backup).unwrap().current_version,
-            2
+            3
         );
     }
 

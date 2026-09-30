@@ -22,6 +22,7 @@ export function useUpdateSettingsMutation() {
     mutationFn: (input: UpdateSettingsInput) => updateSettings(input),
     onSuccess: (settings) => {
       queryClient.setQueryData(settingsQueryKey, settings);
+      void queryClient.invalidateQueries({ queryKey: ['habits'] });
     },
   });
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { formatDateOnly, formatWallTime } from './dates';
+import { currentDateInTimezone, formatDateOnly, formatWallTime } from './dates';
 
 describe('date-only and wall-time formatting', () => {
   test('formats a stored date without converting it to an instant', () => {
@@ -12,5 +12,15 @@ describe('date-only and wall-time formatting', () => {
     expect(formatWallTime('09:30', '24h')).toBe('09:30');
     expect(formatWallTime('09:30', '12h')).toBe('9:30 AM');
     expect(formatWallTime('15:05', '12h')).toBe('3:05 PM');
+  });
+
+  test('derives today in the persisted application timezone', () => {
+    const instant = new Date('2026-09-29T18:00:00.000Z');
+    expect(currentDateInTimezone('Asia/Ho_Chi_Minh', instant)).toBe(
+      '2026-09-30',
+    );
+    expect(currentDateInTimezone('America/New_York', instant)).toBe(
+      '2026-09-29',
+    );
   });
 });

@@ -93,6 +93,17 @@ pub fn run() {
             commands::update_task,
             commands::set_task_status,
             commands::delete_task,
+            commands::list_habits,
+            commands::get_habit_detail,
+            commands::create_habit,
+            commands::update_habit_profile,
+            commands::schedule_habit_rule_change,
+            commands::archive_habit,
+            commands::save_habit_entry,
+            commands::list_today_habits,
+            commands::get_habit_year,
+            commands::get_habit_delete_impact,
+            commands::delete_habit,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Zenfolio");
