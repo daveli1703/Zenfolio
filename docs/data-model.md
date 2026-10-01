@@ -4,7 +4,8 @@ Milestone 3 introduces migration `0001_settings.sql` with only
 `schema_migrations` and the singleton `app_settings` table. Milestone 4 adds
 `0002_tasks.sql` for projects, tags, tasks, and task/tag relationships.
 Milestone 5 adds `0003_habits.sql` for habits, effective-dated rules, and one
-aggregate entry per habit/date. Later features continue through numbered,
+aggregate entry per habit/date. Milestone 6 adds `0004_goals.sql` for independent
+goals with exact manual progress. Later features continue through numbered,
 checksummed, forward-only migrations.
 
 ## Storage and boundaries
@@ -29,7 +30,10 @@ checksummed, forward-only migrations.
   habit/date. Monday is bit zero in the seven-bit weekday mask. The applicable
   rule is the latest rule effective on or before a date. Target and schedule
   edits replace tomorrow's pending rule without rewriting earlier rules.
-- Independent goals with manual scaled-integer progress and explicit status.
+- Goals store target and current progress as signed 64-bit scaled integers with
+  an immutable-per-write decimal scale from zero to three. IPC represents these
+  integers as decimal strings. Completion is an explicit status transition with
+  a UTC completion timestamp; reaching the target does not change status.
 - Accounts, typed transaction categories, transactions, monthly and category budgets.
 - Single-day planner events with optional task links.
 

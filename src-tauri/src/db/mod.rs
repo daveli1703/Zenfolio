@@ -1,3 +1,4 @@
+pub mod goals_repository;
 pub mod habits_repository;
 pub mod migrations;
 pub mod projects_repository;
@@ -263,7 +264,7 @@ mod tests {
             migrations::inspect_schema(connection)
                 .unwrap()
                 .current_version,
-            3
+            4
         );
         assert_eq!(settings_repository::get(connection).unwrap().theme, "dark");
     }
@@ -292,7 +293,7 @@ mod tests {
             migrations::validate_database_file(&paths.database, true)
                 .unwrap()
                 .current_version,
-            3
+            4
         );
     }
 
@@ -325,7 +326,7 @@ mod tests {
             migrations::validate_database_file(&paths.database, true)
                 .unwrap()
                 .current_version,
-            3
+            4
         );
     }
 

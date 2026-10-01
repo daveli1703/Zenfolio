@@ -1,4 +1,5 @@
 pub mod backup;
+pub mod goals;
 pub mod habits;
 pub mod projects;
 pub mod settings;

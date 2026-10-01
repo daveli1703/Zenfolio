@@ -31,6 +31,11 @@ pub const MIGRATIONS: &[Migration] = &[
         name: "habits",
         sql: include_str!("../../migrations/0003_habits.sql"),
     },
+    Migration {
+        version: 4,
+        name: "goals",
+        sql: include_str!("../../migrations/0004_goals.sql"),
+    },
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -263,7 +268,7 @@ mod tests {
         apply_pending(&mut connection, 0).expect("apply migrations");
 
         let status = inspect_schema(&connection).expect("inspect schema");
-        assert_eq!(status.current_version, 3);
+        assert_eq!(status.current_version, 4);
         assert_eq!(status.current_version, status.latest_version);
     }
 
@@ -281,7 +286,7 @@ mod tests {
 
         let error = inspect_schema(&connection).expect_err("reject checksum drift");
         assert_eq!(error.code, "DATABASE_INCOMPATIBLE");
-        assert_eq!(MIGRATIONS.len(), 3);
+        assert_eq!(MIGRATIONS.len(), 4);
     }
 
     #[test]
@@ -324,7 +329,7 @@ mod tests {
         connection
             .execute(
                 "INSERT INTO schema_migrations (version, name, checksum, applied_at)
-                 VALUES (4, 'future', ?1, '2026-09-29T00:00:00.000Z')",
+                 VALUES (5, 'future', ?1, '2026-09-29T00:00:00.000Z')",
                 ["0".repeat(64)],
             )
             .unwrap();
@@ -369,7 +374,7 @@ mod tests {
             [],
         ).unwrap();
 
-        apply_pending(&mut connection, 2).expect("habit migration");
+        apply_pending_from(&mut connection, 2, &MIGRATIONS[2..3]).expect("habit migration");
 
         assert_eq!(inspect_schema(&connection).unwrap().current_version, 3);
         assert_eq!(
@@ -396,5 +401,28 @@ mod tests {
                 .unwrap();
             assert_eq!(count, 1, "missing table {table}");
         }
+    }
+
+    #[test]
+    fn upgrades_a_habit_database_to_goals_and_preserves_existing_data() {
+        let mut connection = Connection::open_in_memory().unwrap();
+        initialize_new_database(&connection).unwrap();
+        apply_pending_from(&mut connection, 0, &MIGRATIONS[..3]).unwrap();
+        connection.execute("INSERT INTO habits (id,name,target_type,color,start_date,created_at,updated_at) VALUES ('h','Read','boolean','#17735a','2026-01-01','now','now')",[]).unwrap();
+        connection.execute("INSERT INTO habit_rules (id,habit_id,effective_date,target,weekday_mask,created_at,updated_at) VALUES ('r','h','2026-01-01',1,127,'now','now')",[]).unwrap();
+        apply_pending(&mut connection, 3).unwrap();
+        assert_eq!(inspect_schema(&connection).unwrap().current_version, 4);
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM habits", [], |r| r.get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM goals", [], |r| r.get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
     }
 }

@@ -4,6 +4,7 @@ import { appSettingsSchema } from './settings';
 import { startupStatusSchema } from './startup';
 import { projectSchema, tagSchema, taskInputSchema, taskSchema } from './tasks';
 import { habitDetailSchema, habitYearSchema } from './habits';
+import { goalSchema } from './goals';
 
 describe('Tauri IPC contracts', () => {
   test('accepts the Rust settings payload shape', () => {
@@ -140,5 +141,26 @@ describe('Tauri IPC contracts', () => {
         },
       }).days[0].date,
     ).toBe('2024-02-29');
+  });
+
+  test('accepts exact scaled goal values as strings', () => {
+    const goal = goalSchema.parse({
+      id: 'goal-1',
+      title: 'Run',
+      description: null,
+      targetValue: '10000',
+      currentValue: '12500',
+      decimalScale: 2,
+      unit: 'km',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      status: 'active',
+      completedAt: null,
+      progressBasisPoints: '12500',
+      createdAt: 'created',
+      updatedAt: 'updated',
+    });
+    expect(goal.currentValue).toBe('12500');
+    expect(goal.progressBasisPoints).toBe('12500');
   });
 });

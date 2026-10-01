@@ -6,6 +6,7 @@ use tauri::State;
 use crate::{
     db::DataEnvironment,
     domain::{
+        goals::{Goal, GoalFilters, GoalInput, GoalProgressInput, GoalStatusInput},
         habits::{
             CreateHabitInput, Habit, HabitDeleteImpact, HabitDetail, HabitEntry, HabitEntryInput,
             HabitProfileInput, HabitRuleInput, HabitToday, HabitYear,
@@ -14,7 +15,7 @@ use crate::{
         tasks::{Project, ProjectInput, Tag, TagInput, Task, TaskFilters, TaskInput},
     },
     error::AppError,
-    services::{backup, habits, projects, settings, tags, tasks},
+    services::{backup, goals, habits, projects, settings, tags, tasks},
     AppState,
 };
 
@@ -292,6 +293,54 @@ pub async fn delete_habit(
     habits::delete(state.database()?, input.id).await
 }
 
+#[tauri::command]
+pub async fn list_goals(
+    filters: GoalFilters,
+    state: State<'_, AppState>,
+) -> Result<Vec<Goal>, AppError> {
+    goals::list(state.database()?, filters).await
+}
+
+#[tauri::command]
+pub async fn get_goal(id: String, state: State<'_, AppState>) -> Result<Goal, AppError> {
+    goals::get(state.database()?, id).await
+}
+
+#[tauri::command]
+pub async fn create_goal(input: GoalInput, state: State<'_, AppState>) -> Result<Goal, AppError> {
+    goals::create(state.database()?, input).await
+}
+
+#[tauri::command]
+pub async fn update_goal(
+    id: String,
+    input: GoalInput,
+    state: State<'_, AppState>,
+) -> Result<Goal, AppError> {
+    goals::update(state.database()?, id, input).await
+}
+
+#[tauri::command]
+pub async fn update_goal_progress(
+    input: GoalProgressInput,
+    state: State<'_, AppState>,
+) -> Result<Goal, AppError> {
+    goals::update_progress(state.database()?, input).await
+}
+
+#[tauri::command]
+pub async fn update_goal_status(
+    input: GoalStatusInput,
+    state: State<'_, AppState>,
+) -> Result<Goal, AppError> {
+    goals::update_status(state.database()?, input).await
+}
+
+#[tauri::command]
+pub async fn delete_goal(input: EntityIdInput, state: State<'_, AppState>) -> Result<(), AppError> {
+    goals::delete(state.database()?, input.id).await
+}
+
 fn validate_path(path: &str) -> Result<(), AppError> {
     if path.trim().is_empty() {
         Err(AppError::new(
@@ -308,7 +357,10 @@ mod tests {
     use super::{BackupPathInput, StartupStatus};
     use crate::{
         db::DataEnvironment,
-        domain::tasks::{Project, Tag, Task},
+        domain::{
+            goals::Goal,
+            tasks::{Project, Tag, Task},
+        },
     };
 
     #[test]
@@ -368,5 +420,28 @@ mod tests {
         assert!(value.get("completedAt").is_some());
         assert_eq!(value["project"]["name"], "Work");
         assert_eq!(value["tags"][0]["name"], "Focus");
+    }
+
+    #[test]
+    fn goal_dto_uses_string_values_and_camel_case() {
+        let goal = Goal {
+            id: "goal".into(),
+            title: "Run".into(),
+            description: None,
+            target_value: "1000".into(),
+            current_value: "1250".into(),
+            decimal_scale: 2,
+            unit: "km".into(),
+            start_date: "2026-01-01".into(),
+            end_date: None,
+            status: "active".into(),
+            completed_at: None,
+            progress_basis_points: "12500".into(),
+            created_at: "created".into(),
+            updated_at: "updated".into(),
+        };
+        let value = serde_json::to_value(goal).unwrap();
+        assert_eq!(value["targetValue"], "1000");
+        assert_eq!(value["progressBasisPoints"], "12500");
     }
 }

@@ -104,6 +104,13 @@ pub fn run() {
             commands::get_habit_year,
             commands::get_habit_delete_impact,
             commands::delete_habit,
+            commands::list_goals,
+            commands::get_goal,
+            commands::create_goal,
+            commands::update_goal,
+            commands::update_goal_progress,
+            commands::update_goal_status,
+            commands::delete_goal,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Zenfolio");
